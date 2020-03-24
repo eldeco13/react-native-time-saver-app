@@ -18,14 +18,32 @@ const timeRecordReducer = (state, action) => {
       return {
         ...state,
         activityState: STARTED,
-        startTime: action.payload
+        startTime: new Date(),
+        stopTime: '',
+        stopTimeFormatted: '',
+        startTimeFormatted: new Date().toLocaleTimeString(),
       }
     case 'STOP':
+      let msDiff = Math.abs((new Date() - state.startTime) / 1000)
+      let fhours = Math.floor(msDiff / 3600) % 24;
+      let fminutes = Math.floor(msDiff / 60) % 60;
         return {
-          ...state,
-          activityState: STOPPED,
-         stopTime: action.payload
+         ...state,
+         activityState: 'STOpED',
+         stopTime: new Date().toLocaleTimeString(),
+         stopTimeFormatted: new Date().toLocaleTimeString(),
+         minutes: fminutes,
+         hours: fhours,
+         timeElapsed: `hours : ${fhours}, minutes : ${fminutes}`,
         }
+    // case 'TIME_ELAPSED':
+
+    //     return {
+    //       ...state,
+    //      minutes: fminutes,
+    //      hours: fhours,
+    //      timeElapsed: `hours : ${fhours}, minutes : ${fminutes}`
+    //     }
       default:
         throw new Error();
   }
@@ -34,16 +52,13 @@ const timeRecordReducer = (state, action) => {
 export default function RecordActivityScreen({ route, navigation }) {
     /* 2. Get the param */
     const [state, dispatch] = useReducer(timeRecordReducer,{
-      activityStatstatee: STOPPED,
+      activityState: STOPPED,
     })
     const { itemId } = route.params;
     const { otherParam } = route.params;
-    const [time, setTime] = useState(new Date())
-    //const [startTime, setStartTime] = useState('')
-    //const [stopTime, setStopTime] = useState('')
-    //const [activityState, setActivityState] = useState(STOPPED)
-    const [timeElapsed, setTimeElapsed] = useState('')
-    const savedCallback = useRef();
+    //const [time, setTime] = useState(new Date())
+    // const [timeElapsed, setTimeElapsed] = useState('')
+    // const savedCallback = useRef();
   
       // Remember the latest callback.
       // useEffect(() => {
@@ -64,57 +79,56 @@ export default function RecordActivityScreen({ route, navigation }) {
     // }, [curTime])
   
     const recordActivityStart = () => {
-      console.log('recordActivityStart')
-      //let time = new Date().getTime(); //Current time, used for calculations
-      let date = new Date().getDate(); //Current Date
-      let month = new Date().getMonth() + 1 //Current Month
-      let year = new Date().getFullYear(); //Current Year
-      let hours = new Date().getHours(); //Current Hours
-      let min = new Date().getMinutes(); //Current Minutes
-      let sec = new Date().getSeconds(); //Current Seconds
+      // console.log('recordActivityStart')
   
       //i will need to commit the data at some point -- after stop
-      const formattedDate = date + '/' + month + '/' + year + ' ' + hours + ':' + min + ':' + sec;
-      setTime(new Date())
-      //setStartTime(formattedDate);
-      dispatch({type: 'START', payload: formattedDate})
-      //setActivityState(STARTED)
-      console.log('state.time');
-      console.log(state.startTime);
+      // const formattedDate = date + '/' + month + '/' + year + ' ' + hours + ':' + min + ':' + sec;
+      // //setTime(new Date())
+      // //setStartTime(formattedDate);
+      // dispatch({type: 'START'})
+      // //setActivityState(STARTED)
+      // console.log('state.time');
+      // console.log(state.startTime);
     }
   
     const recordActivityStop = () => {
       console.log('recordActivityStop')
       //let stopTime = new Date().getTime(); //Current time, used for calculations
-      let date = new Date().getDate(); //Current Date
-      let month = new Date().getMonth() + 1 //Current Month
-      let year = new Date().getFullYear(); //Current Year
-      let hours = new Date().getHours(); //Current Hours
-      let min = new Date().getMinutes(); //Current Minutes
-      let sec = new Date().getSeconds(); //Current Seconds
+      // let date = new Date().getDate(); //Current Date
+      // let month = new Date().getMonth() + 1 //Current Month
+      // let year = new Date().getFullYear(); //Current Year
+      // let hours = new Date().getHours(); //Current Hours
+      // let min = new Date().getMinutes(); //Current Minutes
+      // let sec = new Date().getSeconds(); //Current Seconds
   
       //i will need to commit the data at some point -- after stop
-      const formattedDate = date + '/' + month + '/' + year + ' ' + hours + ':' + min + ':' + sec;
+      //const formattedDate = date + '/' + month + '/' + year + ' ' + hours + ':' + min + ':' + sec;
       //setTime(time)
       //setStopTime(formattedDate);
-      dispatch({type: 'STOP', payload: formattedDate})
+      dispatch({type: 'STOP'})
       //setActivityState(STOPPED)
   
       //move the calculation of elapsed time to a new function
-      console.log(time)
-      let msDiff = Math.abs((new Date().getTime() - time.getTime()) / 1000);    //stop activity time - start activity time
+      // console.log('state-times')
+      // console.log(state.stopTime)
+      // console.log(state.startTime)
+      //let msDiff = Math.abs((state.stopTime - state.startTime) / 1000);    //stop activity time - start activity time
       //https://www.toptal.com/software/definitive-guide-to-datetime-manipulation
       
+      //dispatch({type: 'TIME_ELAPSED'})
+      // let timeElapsed = state
+      // console.log('time elapsed : ' + timeElapsed);
+      // console.log(timeElapsed);
       //console.log(msDiff)
       // get hours 
-      let fhours = Math.floor(msDiff / 3600) % 24;
-      let fminutes = Math.floor(msDiff / 60) % 60;
+      // let fhours = Math.floor(msDiff / 3600) % 24;
+      // let fminutes = Math.floor(msDiff / 60) % 60;
       //let daysTill30June2035 = Math.floor(msDiff / (1000 * 60 * 60 * 24));
-      console.log("hrs / min")
-      console.log(fhours);
-      console.log(fminutes);
-      setTimeElapsed(`hours : ${new Date().getHours() - time.getHours()}, minutes : ${new Date().getMinutes() - time.getMinutes()}`);
-      
+      // console.log("hrs / min")
+      // console.log(fhours);
+      // console.log(fminutes);
+      //setTimeElapsed(`hours : ${new Date().getHours() - time.getHours()}, minutes : ${new Date().getMinutes() - time.getMinutes()}`);
+      //setTimeElapsed(`hours : ${fhours}, minutes : ${fminutes}`)
       //
   
       //commit
@@ -123,9 +137,9 @@ export default function RecordActivityScreen({ route, navigation }) {
           //id: docRef.id,
           activityID: itemId,
           activityName: otherParam,
-          startDate: time,
-          hours: fhours,
-          minutes: fminutes,
+          startDate: state.startTime,
+          hours: state.hours,
+          minutes: state.minutes,
           endDate: new Date(),
           created: new Date()
         })
@@ -148,8 +162,8 @@ export default function RecordActivityScreen({ route, navigation }) {
         </Text>
   
         <View style={{flexDirection: 'row', alignItems: 'space-between', backgroundColor: "#192338", marginBottom: 20}}>
-          <Button  style={{fontSize: 22, color: "#fff", margin: 10}} title="Start" onPress={() => recordActivityStart()} />
-          <Button style={{fontSize: 22, color: "#fff"}} title="Stop" onPress={() => recordActivityStop()} />
+          <Button  style={{fontSize: 22, color: "#fff", margin: 10}} title="Start" onPress={() => dispatch({type: 'START'})} />
+          <Button style={{fontSize: 22, color: "#fff"}} title="Stop" onPress={() => dispatch({type: 'STOP'})}/>
         </View>
   
         {/* <Button title="Go to Home" onPress={() => navigation.navigate('Home')} /> */}
@@ -159,13 +173,13 @@ export default function RecordActivityScreen({ route, navigation }) {
                 Activity Status : {state.activityState}
               </Text>
               <Text style={{fontSize: 22, color: "#fff", }}>
-                Start Time : {state.startTime}
+                Start Time : {state.startTimeFormatted}
               </Text>
               <Text style={{fontSize: 22, color: "#fff", }}>
-                Stop Time : {state.stopTime}
+                Stop Time : {state.stopTimeFormatted}
               </Text>
               <Text style={{fontSize: 22, color: "#fff", }}>
-                Duration : {timeElapsed}
+                Duration : {state.timeElapsed}
               </Text>
           </View>
           <Text style={{fontSize: 22, color: "#fff", }}>Country: {Localization.locale}</Text>
