@@ -1,4 +1,4 @@
-import React, { useState, useRef, useReducer} from 'react';
+import React, { useState, useRef, useReducer, useCallback} from 'react';
 import {
   StyleSheet,
   Text,
@@ -6,56 +6,32 @@ import {
   View,
 } from 'react-native';
 
-import {db} from '../../config/firebase'
+
 import * as Localization from 'expo-localization';
+import timeRecordReducer, {initialStateRecordActivity} from '../../reducer'
+import useRecordActivity from '../../hooks/useRecordActivity'
+import {startRecord, stopRecord} from '../../action/actionCreators' 
 
-const STOPPED = "Stopped"
-const STARTED = "Started"
 
-const timeRecordReducer = (state, action) => {
-  switch (action.type){
-    case 'START':
-      return {
-        ...state,
-        activityState: STARTED,
-        startTime: new Date(),
-        stopTime: '',
-        stopTimeFormatted: '',
-        startTimeFormatted: new Date().toLocaleTimeString(),
-      }
-    case 'STOP':
-      let msDiff = Math.abs((new Date() - state.startTime) / 1000)
-      let fhours = Math.floor(msDiff / 3600) % 24;
-      let fminutes = Math.floor(msDiff / 60) % 60;
-        return {
-         ...state,
-         activityState: 'STOpED',
-         stopTime: new Date().toLocaleTimeString(),
-         stopTimeFormatted: new Date().toLocaleTimeString(),
-         minutes: fminutes,
-         hours: fhours,
-         timeElapsed: `hours : ${fhours}, minutes : ${fminutes}`,
-        }
-    // case 'TIME_ELAPSED':
-
-    //     return {
-    //       ...state,
-    //      minutes: fminutes,
-    //      hours: fhours,
-    //      timeElapsed: `hours : ${fhours}, minutes : ${fminutes}`
-    //     }
-      default:
-        throw new Error();
-  }
-}
 
 export default function RecordActivityScreen({ route, navigation }) {
+  const [state, dispatch] = useReducer(timeRecordReducer, initialStateRecordActivity)
+  console.log('state')
+  console.log(state)    
+  const { itemId } = route.params;
+  const { otherParam } = route.params;
+  // console.log('state in RecordActivityScreen')
+  // console.log(state)
+  // const [makeRequest] = useRecordActivity(itemId, otherParam)
+  // console.log('makeRequest')
+  // console.log(makeRequest)
+  //const ActivityState = state.activityState;
     /* 2. Get the param */
-    const [state, dispatch] = useReducer(timeRecordReducer,{
-      activityState: STOPPED,
-    })
-    const { itemId } = route.params;
-    const { otherParam } = route.params;
+    // const [state, dispatch] = useReducer(timeRecordReducer,{
+    //   activityState: STOPPED,
+    // })
+    //useRecordActivity('')
+
     //const [time, setTime] = useState(new Date())
     // const [timeElapsed, setTimeElapsed] = useState('')
     // const savedCallback = useRef();
@@ -79,7 +55,8 @@ export default function RecordActivityScreen({ route, navigation }) {
     // }, [curTime])
   
     const recordActivityStart = () => {
-      // console.log('recordActivityStart')
+      console.log('recordActivityStart')
+      //const [state] = useRecordActivity('start')
   
       //i will need to commit the data at some point -- after stop
       // const formattedDate = date + '/' + month + '/' + year + ' ' + hours + ':' + min + ':' + sec;
@@ -93,6 +70,7 @@ export default function RecordActivityScreen({ route, navigation }) {
   
     const recordActivityStop = () => {
       console.log('recordActivityStop')
+      //const [state] = useRecordActivity('stop')
       //let stopTime = new Date().getTime(); //Current time, used for calculations
       // let date = new Date().getDate(); //Current Date
       // let month = new Date().getMonth() + 1 //Current Month
@@ -105,7 +83,7 @@ export default function RecordActivityScreen({ route, navigation }) {
       //const formattedDate = date + '/' + month + '/' + year + ' ' + hours + ':' + min + ':' + sec;
       //setTime(time)
       //setStopTime(formattedDate);
-      dispatch({type: 'STOP'})
+      //dispatch({type: 'STOP'})
       //setActivityState(STOPPED)
   
       //move the calculation of elapsed time to a new function
@@ -133,25 +111,25 @@ export default function RecordActivityScreen({ route, navigation }) {
   
       //commit
       // Add a new document with a generated id.
-        let docRef = db.collection("record-activities").add({
-          //id: docRef.id,
-          activityID: itemId,
-          activityName: otherParam,
-          startDate: state.startTime,
-          hours: state.hours,
-          minutes: state.minutes,
-          endDate: new Date(),
-          created: new Date()
-        })
-        .then(function(docRef) {
-          console.log("Document written with ID: ", docRef.id);
-          docRef.update({
-            id: docRef.id
-          });
-        })
-        .catch(function(error) {
-          console.error("Error adding document: ", error);
-        });
+        // let docRef = db.collection("record-activities").add({
+        //   //id: docRef.id,
+        //   activityID: itemId,
+        //   activityName: otherParam,
+        //   startDate: state.startTime,
+        //   hours: state.hours,
+        //   minutes: state.minutes,
+        //   endDate: new Date(),
+        //   created: new Date()
+        // })
+        // .then(function(docRef) {
+        //   console.log("Document written with ID: ", docRef.id);
+        //   docRef.update({
+        //     id: docRef.id
+        //   });
+        // })
+        // .catch(function(error) {
+        //   console.error("Error adding document: ", error);
+        // });
     }
   
     return (
@@ -162,8 +140,10 @@ export default function RecordActivityScreen({ route, navigation }) {
         </Text>
   
         <View style={{flexDirection: 'row', alignItems: 'space-between', backgroundColor: "#192338", marginBottom: 20}}>
-          <Button  style={{fontSize: 22, color: "#fff", margin: 10}} title="Start" onPress={() => dispatch({type: 'START'})} />
-          <Button style={{fontSize: 22, color: "#fff"}} title="Stop" onPress={() => dispatch({type: 'STOP'})}/>
+          <Button  style={{fontSize: 22, color: "#fff", margin: 10}} title="Start" onPress={() => dispatch(startRecord())} />
+          <Button style={{fontSize: 22, color: "#fff"}} title="Stop" onPress={() => dispatch(stopRecord())}/>
+          {/* <Button style={{fontSize: 22, color: "#fff"}} title="DB" onPress={() => makeRequest(ActivityState)}/> */}
+          
         </View>
   
         {/* <Button title="Go to Home" onPress={() => navigation.navigate('Home')} /> */}

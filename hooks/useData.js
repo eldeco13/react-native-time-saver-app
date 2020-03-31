@@ -23,15 +23,7 @@ import React, {
           return { 
           ...state,
           data: action.payload,
-        //   API_DATA.push(
-        //     {
-        //         id: doc.id,
-        //         title: doc.data().title,
-        //     }
-        // )
           }
-        // case 'FETCH_FAILURE':
-        //   return { ...state };
         default:
           throw new Error();
       }
