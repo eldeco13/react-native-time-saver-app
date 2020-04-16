@@ -11,114 +11,119 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import SafeAreaView from 'react-native-safe-area-view';
 
-import { useData } from './hooks/useData'
-import RecordActivityScreen from './features/record_activity/RecordActivityScreen'
+//import { useData } from './hooks/useData'
 
 import Constants from 'expo-constants';
-import {db} from './config/firebase'
+//import {db} from './config/firebase' 
 import * as Localization from 'expo-localization';
 
+import { Provider } from 'react-redux'
+//import configureStore from './store'
 
-//ItemSeparatorComponent
-FlatListItemSeparator = () => <View style={styles.line} />;
+import HomeScreen from './screens/HomeScreen';
+import RecordActivityScreen from './screens/RecordActivityScreen';
+
+import firebase from 'firebase/app';
+//import 'firebase/auth'
+import 'firebase/firestore'// <- needed if using firestore
+// import 'firebase/functions' // <- needed if using httpsCallable
+import { createStore, combineReducers, compose } from 'redux'
+import { ReactReduxFirebaseProvider, firebaseReducer } from 'react-redux-firebase'
+import { createFirestoreInstance, firestoreReducer } from 'redux-firestore' // <- needed if using firestore
+import {fbConfig} from './config'
+import {decode, encode} from 'base-64'
+
+if (!global.btoa) {  global.btoa = encode }
+if (!global.atob) { global.atob = decode }
+
+// const initialState = window.__INITIAL_STATE__ || {
+//   firebase: { authError: null }
+// }
+
+// const store = configureStore(initialState)
+
+// react-redux-firebase config
+const rrfConfig = {
+  userProfile: 'users'
+  // useFirestoreForProfile: true // Firestore for Profile instead of Realtime DB
+}
+
+// Initialize firebase instance
+firebase.initializeApp(fbConfig)
+
+// Initialize other services on firebase instance
+firebase.firestore() // <- needed if using firestore
+// firebase.functions() // <- needed if using httpsCallable
+
+// Add firebase to reducers
+const rootReducer = combineReducers({
+  firebase: firebaseReducer,
+  firestore: firestoreReducer 
+})
+
+// Create store with reducers and initial state
+const initialState = {}
+const store = createStore(rootReducer, initialState)
+
+const rrfProps = {
+  firebase,
+  config: rrfConfig,
+  dispatch: store.dispatch,
+  createFirestoreInstance // <- needed if using firestore
+}
+
+
 
 //const
 const Stack = createStackNavigator();
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        screenOptions={{
-          headerStyle: {
-            backgroundColor: '#f4511e',
-          },
-          headerTintColor: '#fff',
-          headerTitleAlign: 'center',
-          headetMode: 'screen',
-          // headerLeft: () => (
-          //   <Button
-          //     onPress={() => alert('This is a button!')}
-          //     title="Info"
-          //     color="#fff"
-          //   />
-          // ),
-          headerTitleStyle: {
-            fontWeight: 'bold',
-            fontSize: 24,
-            marginBottom: 10
-          },
-        }}
-      >
-        <Stack.Screen 
-          name="Home" 
-          component={HomeScreen} 
-          options={{ title: 'Activities List' }}
+    <Provider store={store}>
+      <ReactReduxFirebaseProvider {...rrfProps}>
+        <NavigationContainer>
+        <Stack.Navigator
+          screenOptions={{
+            headerStyle: {
+              backgroundColor: '#f4511e',
+            },
+            headerTintColor: '#fff',
+            headerTitleAlign: 'center',
+            headetMode: 'screen',
+            // headerLeft: () => (
+            //   <Button
+            //     onPress={() => alert('This is a button!')}
+            //     title="Info"
+            //     color="#fff"
+            //   />
+            // ),
+            headerTitleStyle: {
+              fontWeight: 'bold',
+              fontSize: 24,
+              marginBottom: 10
+            },
+          }}
+        >
+          <Stack.Screen 
+            name="Home" 
+            component={HomeScreen} 
+            options={{ title: 'Activities List' }}
+            />
+          <Stack.Screen
+            name="RecordActivity"
+            component={RecordActivityScreen}
+            options={{ title: 'Record Activity' }}
           />
-        <Stack.Screen
-          name="RecordActivity"
-          component={RecordActivityScreen}
-          options={{ title: 'Record Activity' }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+        </Stack.Navigator>
+      </NavigationContainer>
+      </ReactReduxFirebaseProvider>
+    </Provider>
   );
 }
 
-function HomeScreen({ navigation }) {
-  const [state] = useData([]);
-  const [selected, setSelected] = React.useState(new Map());
 
-  const onSelect = React.useCallback(
-    id => {
-      const newSelected = new Map(selected);
-      newSelected.set(id, !selected.get(id));
 
-      setSelected(newSelected);
-    },
-    [selected],
-  );
-  console.log('app')
-  console.log({ state });
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <FlatList
-        data={state.data}
-        ItemSeparatorComponent={FlatListItemSeparator}
-        renderItem={({ item }) => (
-          <Activity
-            id={item.id}
-            title={item.title}
-            selected={!!selected.get(item.id)}
-            onSelect={onSelect}
-            navigation={navigation}
-          />
-        )}
-        keyExtractor={item => item.id}
-        extraData={selected}
-      />
-    </SafeAreaView>
-  )
-}
-
-function Activity({ id, title, selected, onSelect, navigation }) {
-  return (
-    <TouchableOpacity
-      //onPress={() => onSelect(id)}
-      onPress={() => navigation.navigate('RecordActivity', {
-        itemId: id,
-        otherParam: title,
-      })}
-      style={[
-        styles.activity,
-        { backgroundColor: selected ? '#FA7B5F' : '#192338' },
-      ]}
-    >
-      <Text style={styles.title}>{title}</Text>
-    </TouchableOpacity>
-  );
-}
 
 const styles = StyleSheet.create({
   container: {

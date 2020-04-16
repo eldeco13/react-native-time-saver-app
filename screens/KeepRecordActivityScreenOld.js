@@ -5,21 +5,27 @@ import {
   Button,
   View,
 } from 'react-native';
+import { useSelector } from 'react-redux'
 
 
 import * as Localization from 'expo-localization';
-import timeRecordReducer, {initialStateRecordActivity} from '../../reducer'
-import useRecordActivity from '../../hooks/useRecordActivity'
-import {startRecord, stopRecord} from '../../action/actionCreators' 
+import timeRecordReducer, {initialStateRecordActivity} from '../reducer'
+import useRecordActivity from '../hooks/useRecordActivity'
+import {startRecord, stopRecord} from '../action/actionCreators' 
 
 
 
-export default function RecordActivityScreen({ route, navigation }) {
-  const [state, dispatch] = useReducer(timeRecordReducer, initialStateRecordActivity)
-  console.log('state')
-  console.log(state)    
-  const { itemId } = route.params;
+export default function RecordActivityScreenOld({route, navigation }) {
+  const { activityId } = route.params;
   const { otherParam } = route.params;
+  const activity = useSelector(
+    ({ firestore: { data } }) => data.timesaver && data.timesaver[activityId]
+  )
+  const [state, dispatch] = useReducer(timeRecordReducer, initialStateRecordActivity)
+  console.log('RecordActivityScreen - id')
+  console.log(activityId)    
+  console.log(activity.title)
+
   // console.log('state in RecordActivityScreen')
   // console.log(state)
   // const [makeRequest] = useRecordActivity(itemId, otherParam)
@@ -136,19 +142,20 @@ export default function RecordActivityScreen({ route, navigation }) {
   
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: "#192338"}}>
         <Text style={{fontSize: 42, color: "#fff", marginBottom: 20}}>
-          {otherParam}
+          {activity.title}
         </Text>
+
+        <ActivityTimer />
   
-        <View style={{flexDirection: 'row', alignItems: 'space-between', backgroundColor: "#192338", marginBottom: 20}}>
+        {/* <View style={{flexDirection: 'row', alignItems: 'space-between', backgroundColor: "#192338", marginBottom: 20}}>
           <Button  style={{fontSize: 22, color: "#fff", margin: 10}} title="Start" onPress={() => dispatch(startRecord())} />
           <Button style={{fontSize: 22, color: "#fff"}} title="Stop" onPress={() => dispatch(stopRecord())}/>
           {/* <Button style={{fontSize: 22, color: "#fff"}} title="DB" onPress={() => makeRequest(ActivityState)}/> */}
-          
-        </View>
+        {/* </View> */}
   
         {/* <Button title="Go to Home" onPress={() => navigation.navigate('Home')} /> */}
         {/* <Button title="Go back" onPress={() => navigation.goBack()} /> */}
-        <View>
+        {/* <View>
               <Text style={{fontSize: 22, color: "#fff", }}>
                 Activity Status : {state.activityState}
               </Text>
@@ -163,7 +170,8 @@ export default function RecordActivityScreen({ route, navigation }) {
               </Text>
           </View>
           <Text style={{fontSize: 22, color: "#fff", }}>Country: {Localization.locale}</Text>
-      </View>
+          */}
+      </View> 
     );
 }
 
@@ -173,7 +181,7 @@ const styles = StyleSheet.create({
    // marginTop: Constants.statusBarHeight,
     backgroundColor: "#192338",
     paddingVertical: 50,
-    flexDirection: 'row-reverse'
+    direction: 'ltr'
     //position: "relative"
   },
   activity: {
